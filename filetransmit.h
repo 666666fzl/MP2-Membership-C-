@@ -17,9 +17,12 @@ using namespace std;
 
 int receivePutRequest(int sockfd, char* buf, uint32_t len, std::string& sender);
 
-void putFile(int sockfd, std::string filename, std::string sdfsfilename, std::string& add, int port, char* buf, uint32_t len);
+void putFile(int out_fd, std::string localfilename, std::string sdfsfilename, std::string& add, int port, char* buf, uint32_t len);
 
+string receiveGetRequest(int sockfd, char* buf, uint32_t len, std::string& sender);
 
+void getFile(int out_fd, int in_fd, std::string sdfsfilename, std::string localfilename, char* buf, uint32_t len);
 
+void replyGetRequest(int sockfd, string sdfsfilename); 
 
 #endif

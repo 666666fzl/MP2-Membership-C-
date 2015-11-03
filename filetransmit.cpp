@@ -13,21 +13,15 @@
 #include "filetransmit.h"
 #include "constant.h"
 
-
+/*
+    Dealing with Put file and its request
+*/
 int receivePutRequest(int sockfd, char* buf, uint32_t len, std::string& sender)
 {
     struct sockaddr addr;
     socklen_t fromlen = sizeof addr;
     cout<<"receiving"<<endl;
     int byte_count = 0;
-
-    // char filename_buffer[256];
-    // bzero(filename_buffer,256);
-    // int filename_len = 0;
-    // filename_len = read(sockfd, filename_buffer, 255);
-    // if (filename_len < 0) 
-    //     printf("ERROR reading from socket\n");
-    // printf("msg: %s\n",filename_buffer);
 
     FILE * filew;
     //filew=fopen("acopy.txt","wb");
@@ -41,11 +35,13 @@ int receivePutRequest(int sockfd, char* buf, uint32_t len, std::string& sender)
             string createFileName = "";
             for(int i = 0; i < temp.size(); i ++)
             {
-                if(temp[i]==":")
+                if(temp[i]==':')
                 {
-                    cout<<"receive file name"<<createFileName<<endl;
-                    filew=fopen(createFileName,"wb");
-                    
+                    findFileName = true;
+                    filew=fopen(createFileName.c_str(),"wb");
+                    fwrite(buf+i+1,1,byte_count,filew);
+                    break;
+
                 }
                 else
                 {
@@ -126,3 +122,76 @@ void putFile(int out_fd, std::string localfilename, std::string sdfsfilename, st
     }
 }
 
+//--------------------------------------------------------------------------------------------------------
+/*
+    Dealing with Get file and its request
+*/
+string receiveGetRequest(int sockfd, char* buf, uint32_t len, std::string& sender)
+{
+    struct sockaddr addr;
+    socklen_t fromlen = sizeof addr;
+    cout<<"receiving"<<endl;
+    int byte_count = 0;
+
+    // char filename_buffer[256];
+    // bzero(filename_buffer,256);
+    // int filename_len = 0;
+    // filename_len = read(sockfd, filename_buffer, 255);
+    // if (filename_len < 0) 
+    //     printf("ERROR reading from socket\n");
+    // printf("msg: %s\n",filename_buffer);
+
+    
+    while ((byte_count = recvfrom(sockfd, buf, len, 0, &addr, &fromlen))!=0)
+    {
+        printf("get file %s\n", buf);
+    }
+    if (byte_count == -1)
+    {
+        printf("ERROR RECEIVING!!!\n");
+        exit(-1);
+    }
+
+    struct sockaddr_in *sin = (struct sockaddr_in *) &addr;
+
+    sender = inet_ntoa(sin->sin_addr);
+
+    return string(buf);
+}
+
+void getFile(int out_fd, int in_fd, std::string sdfsfilename, std::string localfilename, char* buf, uint32_t len)
+{
+    struct sockaddr addr;
+    socklen_t fromlen = sizeof addr;
+    int byte_count = 0;
+    int filename_len = write(out_fd,sdfsfilename.c_str(), strlen(sdfsfilename.c_str()));
+    if(filename_len<0) 
+        printf("Error: sending filename\n");
+
+    FILE *filew = fopen(localfilename.c_str(), "wb");
+
+    while ((byte_count = recvfrom(in_fd, buf, len, 0, &addr, &fromlen))!=0)
+    {
+        fwrite(buf,1,byte_count,filew);
+    }
+}
+
+void replyGetRequest(int sockfd, string sdfsfilename)
+{
+    int fd = open(sdfsfilename.c_str(), O_RDONLY);
+    if(fd==-1)
+    {
+        printf("FILE %s does not exist\n", sdfsfilename.c_str());
+    }
+
+    struct stat stat_buf;      /* argument to fstat */
+    int rc;                    /* holds return code of system calls */
+    /* get the size of the file to be sent */
+    fstat(fd, &stat_buf);
+    /* copy file using sendfile */
+    off_t offset = 0;
+    rc = sendfile (sockfd, fd, &offset, stat_buf.st_size);
+    close(fd);
+    close(sockfd);
+
+}

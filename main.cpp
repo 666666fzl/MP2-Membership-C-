@@ -56,6 +56,8 @@ mutex msgQueueLock;
 
 int putFileSocket;
 int listenFileSocket;
+int getFileSocket;
+
 /* Get address from other nodes: */
 void getAdress(std::string filename)
 {
@@ -538,6 +540,9 @@ bool firstJoin(){
     return joined;
 }
 
+/*
+These two functions deal with put file
+*/
 bool putFileRequest(string localfilename, string sdfsfilename)
 {
     char buf[1024];
@@ -552,7 +557,7 @@ bool putFileRequest(string localfilename, string sdfsfilename)
     return true;
 }
 
-void processPutReqeustThread()
+void processPutRequestThread()
 {
     putFileSocket = open_socket(port + 2);   //use the port next to UDP as TCP port
     int byte_read = 0;
@@ -566,6 +571,42 @@ void processPutReqeustThread()
     }
 }
 
+/*
+These two functions deal with get file
+*/
+bool getFileRequest( string sdfsfilename, string localfilename)
+{
+    char buf[1024];
+    for(int i=0; i < members.size(); i++)
+    {
+        bzero(buf, 1024);
+        int connectionFd;
+        connect_to_server(members[i].ip_str.c_str(), port+3, &connectionFd);
+        getFileSocket = listen_socket(getFileSocket);
+        getFile(connectionFd, getFileSocket, sdfsfilename, localfilename, buf, 1024);
+        cout<<"success get"<<endl;
+    }
+    return true;
+}
+
+void processGetRequestThread()
+{
+    getFileSocket = open_socket(port + 3);   //use the port next to UDP as TCP port
+    string sdfsfilename;
+    string sender;
+    char buf[1024];
+    while(true)
+    {
+        cout<<"receiving stuff"<<endl;
+        getFileSocket = listen_socket(getFileSocket);
+        sdfsfilename = receiveGetRequest(getFileSocket, buf, 1024, sender);
+        int connectionFd;
+        connect_to_server(sender.c_str(), port+3, &connectionFd);
+        replyGetRequest(connectionFd, sdfsfilename); 
+
+    }
+}
+
 /* User thread: Waits for user to input a grep command 
 When receiving the grep command from command line (test cases uses this), 
 it will bypass the cin*/
@@ -575,7 +616,7 @@ void listeningCin()
     while (true)
     {
 
-        std::cout << "Type a command (table, leave, join, put or quit): ";
+        std::cout << "Type a command (table, leave, join, put, get or quit): ";
         getline(std::cin, input);
         //std::cout << "You entered: " << input << std::endl;
         stringstream ss(input); // Insert the string into a stream
@@ -625,8 +666,13 @@ void listeningCin()
 
         else if (tokens[0].compare("put") == 0)
         {
-            cout<<"here"<<endl;
             putFileRequest(tokens[1], tokens[2]);
+        }
+
+        else if (tokens[0].compare("get") == 0)
+        {
+            cout<<"here"<<endl;
+            getFileRequest(tokens[1], tokens[2]);
         }
 
         else{
@@ -675,7 +721,9 @@ int main (int argc, char* argv[])
 
     std::thread listening(listeningThread);
     std::thread detecting(detectThread);
-    std::thread processPutRequest(processPutReqeustThread);
+    std::thread processPutRequest(processPutRequestThread);
+    std::thread processGetRequest(processGetRequestThread);
+
     /*User thread */
     usleep( 1000*1000 );
     std::thread cinListening(listeningCin);
