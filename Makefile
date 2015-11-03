@@ -2,7 +2,7 @@
 #C compiler
 CC = g++
 
-SRC = main.cpp connections.cpp spread.cpp detect.cpp ChronoCpu.cpp Chrono.cpp
+SRC = main.cpp connections.cpp spread.cpp detect.cpp ChronoCpu.cpp Chrono.cpp filetransmit.cpp
 
 CC_FLAGS = -pthread -std=c++11
 

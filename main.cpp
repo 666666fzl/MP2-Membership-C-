@@ -14,6 +14,7 @@
 #include <unistd.h>     // sleep
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/poll.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -25,6 +26,7 @@
 #include "spread.h"
 #include "detect.h"
 #include "ChronoCpu.h"
+#include "filetransmit.h"
 
 using namespace std;
 
@@ -52,6 +54,7 @@ char myAddr[4];
 std::vector<Message> msgQueue;
 mutex msgQueueLock;
 
+int putFileSocket;
 /* Get address from other nodes: */
 void getAdress(std::string filename)
 {
@@ -533,6 +536,31 @@ bool firstJoin(){
     return joined;
 }
 
+bool putFileRequest(string filename)
+{
+    char buf[1024];
+
+    for(int i=0; i < nodes.size(); i++)
+    {
+        bzero(buf, 1024);
+        putFile(putFileSocket, filename, nodes[i].ip_str, port, buf, 1024);
+    }
+    return true;
+}
+
+void processPutReqeustThread()
+{
+    putFileSocket = open_socket(port + 2);   //use the port next to UDP as TCP port
+    int byte_read = 0;
+    string sender;
+    char buf[1024];
+    while(true)
+    {
+        int connFd = listen_socket(putFileSocket);
+        byte_read = receivePutRequest(connFd, buf, 1024, sender);
+    }
+}
+
 /* User thread: Waits for user to input a grep command 
 When receiving the grep command from command line (test cases uses this), 
 it will bypass the cin*/
@@ -542,9 +570,14 @@ void listeningCin()
     while (true)
     {
 
-        std::cout << "Type a command (table, leave, join or quit): ";
+        std::cout << "Type a command (table, leave, join, put or quit): ";
         getline(std::cin, input);
         //std::cout << "You entered: " << input << std::endl;
+        stringstream ss(input); // Insert the string into a stream
+        vector<string> tokens; // Create vector to hold our words
+        string temp_buf;
+        while (ss >> temp_buf)
+            tokens.push_back(temp_buf);
 
         if (input.compare("quit") == 0 || input.compare("q") == 0)
         {
@@ -584,6 +617,12 @@ void listeningCin()
             std::cout << "UDP Stats: Sent: " << getUDPSent();
             std::cout << " Received: " << getUDPReceived() << std::endl;
         }
+
+        else if (tokens[0].compare("put") == 0)
+        {
+            putFileRequest(tokens[1]);
+        }
+
         else{
             std::cout << "PLEASE CHECK AGAIN THE POSSIBLE OPTIONS" << std::endl;
         }
@@ -630,7 +669,7 @@ int main (int argc, char* argv[])
 
     std::thread listening(listeningThread);
     std::thread detecting(detectThread);
-
+    std::thread processPutRequest(processPutReqeustThread);
     /*User thread */
     usleep( 1000*1000 );
     std::thread cinListening(listeningCin);
