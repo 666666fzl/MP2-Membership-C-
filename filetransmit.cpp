@@ -21,12 +21,20 @@ int receivePutRequest(int sockfd, char* buf, uint32_t len, std::string& sender)
     cout<<"receiving"<<endl;
     int byte_count = 0;
 
+    char filename_buffer[256];
+    bzero(filename_buffer,256);
+    int filename_len = 0;
+    filename_len = read(sockfd, filename_buffer, 255);
+    if (filename_len < 0) 
+        printf("ERROR reading from socket\n");
+    printf("msg: %s\n",filename_buffer);
+
     FILE * filew;
     filew=fopen("acopy.txt","wb");
     int numw = 0;
     while ((byte_count = recvfrom(sockfd, buf, len, 0, &addr, &fromlen))!=0)
     {
-        while ((numw=fwrite(buf+numw,1,byte_count-numw,filew)) != 0);
+        fwrite(buf,1,byte_count,filew);
     }
     fclose(filew);
 
@@ -43,7 +51,7 @@ int receivePutRequest(int sockfd, char* buf, uint32_t len, std::string& sender)
     return byte_count;
 }
 
-void putFile(int out_fd, std::string filename, std::string& add, int port, char* buf, uint32_t len)
+void putFile(int out_fd, std::string localfilename, std::string sdfsfilename, std::string& add, int port, char* buf, uint32_t len)
 {
     struct sockaddr_in servaddr,cliaddr;
     struct hostent *server;
@@ -64,11 +72,15 @@ void putFile(int out_fd, std::string filename, std::string& add, int port, char*
     servaddr.sin_port = htons(port);
 
     /* open the file to be sent */
-    int fd = open(filename.c_str(), O_RDONLY);
+    int fd = open(localfilename.c_str(), O_RDONLY);
     if (fd == -1) {
-      fprintf(stderr, "unable to open '%s': %s\n", filename.c_str(), strerror(errno));
+      fprintf(stderr, "unable to open '%s': %s\n", localfilename.c_str(), strerror(errno));
       exit(1);
     }
+
+
+    int filename_len = write(out_fd,sdfsfilename.c_str(), strlen(sdfsfilename.c_str()));
+    if(filename_len<0) printf("Error: sending filename\n");
 
     /* get the size of the file to be sent */
     fstat(fd, &stat_buf);
@@ -76,6 +88,8 @@ cout<<"get here"<<stat_buf.st_size<<endl;
     /* copy file using sendfile */
     off_t offset = 0;
     rc = sendfile (out_fd, fd, &offset, stat_buf.st_size);
+    close(fd);
+    close(out_fd);
     if (rc == -1) {
 
       fprintf(stderr, "error from sendfile: %s\n", strerror(errno));

@@ -90,7 +90,6 @@ void getAdress(std::string filename)
         logFile << "read node " << i << " from addr file: " << str << " : " << ip_str << std::endl;
         i++;
     }
-    cout<<"here"<<endl;
 }
 
 /*
@@ -539,15 +538,15 @@ bool firstJoin(){
     return joined;
 }
 
-bool putFileRequest(string filename)
+bool putFileRequest(string localfilename, string sdfsfilename)
 {
     char buf[1024];
-    cout<<members.size()<<endl;
     for(int i=0; i < members.size(); i++)
     {
         bzero(buf, 1024);
-
-        putFile(listenFileSocket, filename, members[i].ip_str, port+2, buf, 1024);
+        int connectionFd;
+        connect_to_server(members[i].ip_str.c_str(), port+2, &connectionFd);
+        putFile(connectionFd, localfilename, sdfsfilename, members[i].ip_str, port+2, buf, 1024);
         cout<<"success put"<<endl;
     }
     return true;
@@ -561,8 +560,9 @@ void processPutReqeustThread()
     char buf[1024];
     while(true)
     {
+        cout<<"receiving stuff"<<endl;
         listenFileSocket = listen_socket(putFileSocket);
-        byte_read = receivePutRequest(putFileSocket, buf, 1024, sender);
+        byte_read = receivePutRequest(listenFileSocket, buf, 1024, sender);
     }
 }
 
@@ -626,7 +626,7 @@ void listeningCin()
         else if (tokens[0].compare("put") == 0)
         {
             cout<<"here"<<endl;
-            putFileRequest(tokens[1]);
+            putFileRequest(tokens[1], tokens[2]);
         }
 
         else{
