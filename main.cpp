@@ -600,6 +600,7 @@ void processGetRequestThread()
         cout<<"receiving stuff"<<endl;
         int listenGetFileSocket = listen_socket(getFileSocket);
         sdfsfilename = receiveGetRequest(listenGetFileSocket, buf, 1024, sender);
+        cout<<"filename "<<sdfsfilename<<endl;
         // int connectionFd;
         // cout<<"sender is "<<sender<<endl;
         // connect_to_server(sender.c_str(), port+3, &connectionFd);

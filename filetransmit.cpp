@@ -141,10 +141,23 @@ string receiveGetRequest(int sockfd, char* buf, uint32_t len, std::string& sende
     //     printf("ERROR reading from socket\n");
     // printf("msg: %s\n",filename_buffer);
 
-    
-    while ((byte_count = recvfrom(sockfd, buf, len, 0, &addr, &fromlen))!=0)
+    string sdfsfilename = "";
+    bool findFileName = false;
+    while (!findFileName && (byte_count = recvfrom(sockfd, buf, len, 0, &addr, &fromlen))!=0)
     {
         printf("get file %s\n", buf);
+        string temp(buf);
+        for(int i = 0; i < temp.size(); i ++)
+        {
+            if(temp[i]==':')
+            {
+                findFileName = true;
+            }
+            else
+            {
+                sdfsfilename+=temp[i];
+            }
+        }
     }
     if (byte_count == -1)
     {
@@ -156,7 +169,7 @@ string receiveGetRequest(int sockfd, char* buf, uint32_t len, std::string& sende
 
     sender = inet_ntoa(sin->sin_addr);
 
-    return string(buf);
+    return sdfsfilename;
 }
 
 void getFile(int sock_fd, std::string sdfsfilename, std::string localfilename, char* buf, uint32_t len)
@@ -164,6 +177,7 @@ void getFile(int sock_fd, std::string sdfsfilename, std::string localfilename, c
     struct sockaddr addr;
     socklen_t fromlen = sizeof addr;
     int byte_count = 0;
+    sdfsfilename+=":";
     int filename_len = write(sock_fd,sdfsfilename.c_str(), strlen(sdfsfilename.c_str()));
 
     if(filename_len<0) 
