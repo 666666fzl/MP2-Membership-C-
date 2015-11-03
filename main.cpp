@@ -55,6 +55,7 @@ std::vector<Message> msgQueue;
 mutex msgQueueLock;
 
 int putFileSocket;
+int listenFileSocket;
 /* Get address from other nodes: */
 void getAdress(std::string filename)
 {
@@ -66,16 +67,17 @@ void getAdress(std::string filename)
     while(!addFile.eof())
     {
         getline(addFile, str);
-        address.push_back(str);
+
         struct hostent *server = gethostbyname(str.c_str());
 
         struct in_addr addr;
         char ip[20];
+        printf("%s\n", server->h_addr_list[0]);
         memcpy(&addr, server->h_addr_list[0], sizeof(struct in_addr)); 
         strcpy(ip,inet_ntoa(addr));
         
         std::string ip_str (ip);
-
+        cout<<ip_str<<endl;
         struct Node newnode;
         //newnode.name = str;
         newnode.ip_str = ip_str;
@@ -88,6 +90,7 @@ void getAdress(std::string filename)
         logFile << "read node " << i << " from addr file: " << str << " : " << ip_str << std::endl;
         i++;
     }
+    cout<<"here"<<endl;
 }
 
 /*
@@ -539,11 +542,13 @@ bool firstJoin(){
 bool putFileRequest(string filename)
 {
     char buf[1024];
-
-    for(int i=0; i < nodes.size(); i++)
+    cout<<members.size()<<endl;
+    for(int i=0; i < members.size(); i++)
     {
         bzero(buf, 1024);
-        putFile(putFileSocket, filename, nodes[i].ip_str, port, buf, 1024);
+
+        putFile(listenFileSocket, filename, members[i].ip_str, port+2, buf, 1024);
+        cout<<"success put"<<endl;
     }
     return true;
 }
@@ -556,8 +561,8 @@ void processPutReqeustThread()
     char buf[1024];
     while(true)
     {
-        int connFd = listen_socket(putFileSocket);
-        byte_read = receivePutRequest(connFd, buf, 1024, sender);
+        listenFileSocket = listen_socket(putFileSocket);
+        byte_read = receivePutRequest(putFileSocket, buf, 1024, sender);
     }
 }
 
@@ -620,6 +625,7 @@ void listeningCin()
 
         else if (tokens[0].compare("put") == 0)
         {
+            cout<<"here"<<endl;
             putFileRequest(tokens[1]);
         }
 

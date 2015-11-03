@@ -3,7 +3,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/uio.h>
+#include <sys/sendfile.h>
 #include <sys/stat.h> 
 #include <fcntl.h>
 #include <netinet/in.h>
@@ -18,7 +18,7 @@ int receivePutRequest(int sockfd, char* buf, uint32_t len, std::string& sender)
 {
     struct sockaddr addr;
     socklen_t fromlen = sizeof addr;
-
+    cout<<"receiving"<<endl;
     int byte_count = 0;
 
     FILE * filew;
@@ -72,14 +72,16 @@ void putFile(int out_fd, std::string filename, std::string& add, int port, char*
 
     /* get the size of the file to be sent */
     fstat(fd, &stat_buf);
-
+cout<<"get here"<<stat_buf.st_size<<endl;
     /* copy file using sendfile */
     off_t offset = 0;
-    rc = sendfile (fd, out_fd, offset, &(stat_buf.st_size), NULL, 0);
+    rc = sendfile (out_fd, fd, &offset, stat_buf.st_size);
     if (rc == -1) {
+
       fprintf(stderr, "error from sendfile: %s\n", strerror(errno));
       exit(1);
     }
+
     if (rc != stat_buf.st_size) {
       fprintf(stderr, "incomplete transfer from sendfile: %d of %d bytes\n",
               rc,
