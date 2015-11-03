@@ -21,20 +21,42 @@ int receivePutRequest(int sockfd, char* buf, uint32_t len, std::string& sender)
     cout<<"receiving"<<endl;
     int byte_count = 0;
 
-    char filename_buffer[256];
-    bzero(filename_buffer,256);
-    int filename_len = 0;
-    filename_len = read(sockfd, filename_buffer, 255);
-    if (filename_len < 0) 
-        printf("ERROR reading from socket\n");
-    printf("msg: %s\n",filename_buffer);
+    // char filename_buffer[256];
+    // bzero(filename_buffer,256);
+    // int filename_len = 0;
+    // filename_len = read(sockfd, filename_buffer, 255);
+    // if (filename_len < 0) 
+    //     printf("ERROR reading from socket\n");
+    // printf("msg: %s\n",filename_buffer);
 
     FILE * filew;
-    filew=fopen("acopy.txt","wb");
+    //filew=fopen("acopy.txt","wb");
     int numw = 0;
+    bool findFileName = false;
     while ((byte_count = recvfrom(sockfd, buf, len, 0, &addr, &fromlen))!=0)
     {
-        fwrite(buf,1,byte_count,filew);
+        if(!findFileName)
+        {
+            string temp(buf);
+            string createFileName = "";
+            for(int i = 0; i < temp.size(); i ++)
+            {
+                if(temp[i]==":")
+                {
+                    cout<<"receive file name"<<createFileName<<endl;
+                    filew=fopen(createFileName,"wb");
+                    
+                }
+                else
+                {
+                    createFileName+=temp[i];
+                }
+            }
+        }
+        else
+        {
+            fwrite(buf,1,byte_count,filew);
+        }
     }
     fclose(filew);
 
@@ -78,13 +100,13 @@ void putFile(int out_fd, std::string localfilename, std::string sdfsfilename, st
       exit(1);
     }
 
-
+    sdfsfilename+=":";
     int filename_len = write(out_fd,sdfsfilename.c_str(), strlen(sdfsfilename.c_str()));
     if(filename_len<0) printf("Error: sending filename\n");
 
     /* get the size of the file to be sent */
     fstat(fd, &stat_buf);
-cout<<"get here"<<stat_buf.st_size<<endl;
+    cout<<"get here"<<stat_buf.st_size<<endl;
     /* copy file using sendfile */
     off_t offset = 0;
     rc = sendfile (out_fd, fd, &offset, stat_buf.st_size);
