@@ -21,7 +21,7 @@ void putFile(int out_fd, std::string localfilename, std::string sdfsfilename, st
 
 string receiveGetRequest(int sockfd, char* buf, uint32_t len, std::string& sender);
 
-void getFile(int out_fd, int in_fd, std::string sdfsfilename, std::string localfilename, char* buf, uint32_t len);
+void getFile(int sock_fd, std::string sdfsfilename, std::string localfilename, char* buf, uint32_t len);
 
 void replyGetRequest(int sockfd, string sdfsfilename); 
 

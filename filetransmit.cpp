@@ -130,7 +130,7 @@ string receiveGetRequest(int sockfd, char* buf, uint32_t len, std::string& sende
 {
     struct sockaddr addr;
     socklen_t fromlen = sizeof addr;
-    cout<<"receiving"<<endl;
+    cout<<"receiving get"<<endl;
     int byte_count = 0;
 
     // char filename_buffer[256];
@@ -159,21 +159,23 @@ string receiveGetRequest(int sockfd, char* buf, uint32_t len, std::string& sende
     return string(buf);
 }
 
-void getFile(int out_fd, int in_fd, std::string sdfsfilename, std::string localfilename, char* buf, uint32_t len)
+void getFile(int sock_fd, std::string sdfsfilename, std::string localfilename, char* buf, uint32_t len)
 {
     struct sockaddr addr;
     socklen_t fromlen = sizeof addr;
     int byte_count = 0;
-    int filename_len = write(out_fd,sdfsfilename.c_str(), strlen(sdfsfilename.c_str()));
+    int filename_len = write(sock_fd,sdfsfilename.c_str(), strlen(sdfsfilename.c_str()));
+
     if(filename_len<0) 
         printf("Error: sending filename\n");
 
     FILE *filew = fopen(localfilename.c_str(), "wb");
 
-    while ((byte_count = recvfrom(in_fd, buf, len, 0, &addr, &fromlen))!=0)
+    while ((byte_count = recvfrom(sock_fd, buf, len, 0, &addr, &fromlen))!=0)
     {
         fwrite(buf,1,byte_count,filew);
     }
+    close(sock_fd);
 }
 
 void replyGetRequest(int sockfd, string sdfsfilename)

@@ -582,8 +582,8 @@ bool getFileRequest( string sdfsfilename, string localfilename)
         bzero(buf, 1024);
         int connectionFd;
         connect_to_server(members[i].ip_str.c_str(), port+3, &connectionFd);
-        getFileSocket = listen_socket(getFileSocket);
-        getFile(connectionFd, getFileSocket, sdfsfilename, localfilename, buf, 1024);
+       // getFileSocket = listen_socket(getFileSocket);
+        getFile(connectionFd, sdfsfilename, localfilename, buf, 1024);
         cout<<"success get"<<endl;
     }
     return true;
@@ -598,11 +598,12 @@ void processGetRequestThread()
     while(true)
     {
         cout<<"receiving stuff"<<endl;
-        getFileSocket = listen_socket(getFileSocket);
-        sdfsfilename = receiveGetRequest(getFileSocket, buf, 1024, sender);
-        int connectionFd;
-        connect_to_server(sender.c_str(), port+3, &connectionFd);
-        replyGetRequest(connectionFd, sdfsfilename); 
+        int listenGetFileSocket = listen_socket(getFileSocket);
+        sdfsfilename = receiveGetRequest(listenGetFileSocket, buf, 1024, sender);
+        // int connectionFd;
+        // cout<<"sender is "<<sender<<endl;
+        // connect_to_server(sender.c_str(), port+3, &connectionFd);
+        replyGetRequest(listenGetFileSocket, sdfsfilename); 
 
     }
 }
