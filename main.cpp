@@ -540,18 +540,41 @@ bool firstJoin(){
     return joined;
 }
 
+
+//This function generate group of id which we need to put replications to 
+vector<Node> generateReplicationGroup()
+{
+    //if size < 2 dont change, other wise random pick 3.
+    std::vector<Node> replica;
+    
+    if(members.size()<=3){
+        for(int i = 0; i < members.size(); i++){
+            replica.push_back(members[i]);
+        }
+    }
+    else{
+        int main_replica = rand() % members.size();
+        replica.push_back(members[main_replica]);
+        replica.push_back(members[(main_replica+1)%members.size()]);
+        replica.push_back(members[(main_replica+2)%members.size()]);
+    }
+    
+    return replica;
+}
+
 /*
 These two functions deal with put file
 */
-bool putFileRequest(string localfilename, string sdfsfilename)
+bool putFileRequest(string localfilename, string sdfsfilename, vector<Node> group)
 {
     char buf[1024];
-    for(int i=0; i < members.size(); i++)
+
+    for(int i=0; i < group.size(); i++)//members
     {
         bzero(buf, 1024);
         int connectionFd;
-        connect_to_server(members[i].ip_str.c_str(), port+2, &connectionFd);
-        putFile(connectionFd, localfilename, sdfsfilename, members[i].ip_str, port+2, buf, 1024);
+        connect_to_server(group[i].ip_str.c_str(), port+2, &connectionFd);//members
+        putFile(connectionFd, localfilename, sdfsfilename, group[i].ip_str, port+2, buf, 1024);//members
         cout<<"success put"<<endl;
     }
     return true;
@@ -698,7 +721,7 @@ void listeningCin()
 
         else if (tokens[0].compare("put") == 0)
         {
-            putFileRequest(tokens[1], tokens[2]);
+            putFileRequest(tokens[1], tokens[2], members);
         }
 
         else if (tokens[0].compare("get") == 0)
