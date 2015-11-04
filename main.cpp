@@ -57,7 +57,7 @@ mutex msgQueueLock;
 int putFileSocket;
 int listenFileSocket;
 int getFileSocket;
-
+int deleteFileSocket;
 /* Get address from other nodes: */
 void getAdress(std::string filename)
 {
@@ -628,14 +628,13 @@ bool deleteFileRequest( string sdfsfilename)
 
 void processDeleteRequestThread()
 {
-    int deleteFileSocket = open_socket(port + 4);   //use the port next to UDP as TCP port
-    string sdfsfilename;
+    deleteFileSocket = open_socket(port + 4);   //use the port next to UDP as TCP port
     string sender;
     char buf[1024];
     while(true)
     {
-        int deleteFileSocket = listen_socket(deleteFileSocket);
-        receiveDeleteRequest(deleteFileSocket); 
+        int listenDeleteFileSocket = listen_socket(deleteFileSocket);
+        receiveDeleteRequest(listenDeleteFileSocket); 
 
     }
 }
@@ -769,7 +768,8 @@ int main (int argc, char* argv[])
     listening.join();
     detecting.join();
     cinListening.join();
-  
-    
+    processPutRequest.join();
+    processGetRequest.join();
+    processDeleteRequest.join();
     return 0;
 }
