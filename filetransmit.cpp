@@ -133,14 +133,6 @@ string receiveGetRequest(int sockfd, char* buf, uint32_t len, std::string& sende
     cout<<"receiving get"<<endl;
     int byte_count = 0;
 
-    // char filename_buffer[256];
-    // bzero(filename_buffer,256);
-    // int filename_len = 0;
-    // filename_len = read(sockfd, filename_buffer, 255);
-    // if (filename_len < 0) 
-    //     printf("ERROR reading from socket\n");
-    // printf("msg: %s\n",filename_buffer);
-
     string sdfsfilename = "";
     bool findFileName = false;
     while (!findFileName && (byte_count = recvfrom(sockfd, buf, len, 0, &addr, &fromlen))!=0)
@@ -187,9 +179,12 @@ void getFile(int sock_fd, std::string sdfsfilename, std::string localfilename, c
 
     while ((byte_count = recvfrom(sock_fd, buf, len, 0, &addr, &fromlen))!=0)
     {
+        printf("%s\n", buf);
+        cout<<"idid write to something"<<endl;
         fwrite(buf,1,byte_count,filew);
     }
     close(sock_fd);
+    fclose(filew);
 }
 
 void replyGetRequest(int sockfd, string sdfsfilename)
@@ -210,4 +205,36 @@ void replyGetRequest(int sockfd, string sdfsfilename)
     close(fd);
     close(sockfd);
 
+}
+
+void deleteFile(int sock_fd, std::string sdfsfilename)
+{
+    int filename_len = write(sock_fd,sdfsfilename.c_str(), strlen(sdfsfilename.c_str()));
+
+    if(filename_len<0) 
+        printf("Error: sending filename\n");
+
+    close(sock_fd);
+}
+
+void receiveDeleteRequest(int sockfd)
+{
+    struct sockaddr addr;
+    socklen_t fromlen = sizeof addr;
+    cout<<"receiving get"<<endl;
+    int byte_count = 0;
+    char buf[1024];
+    bool findFileName = false;
+    while ((byte_count = recv(sockfd, buf, sizeof(buf), 0))!=0)
+    {
+        
+    }
+    string sdfsfilename(buf); 
+    if (byte_count == -1)
+    {
+        printf("ERROR RECEIVING!!!\n");
+        exit(-1);
+    }
+
+    remove(sdfsfilename.c_str());
 }

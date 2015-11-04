@@ -25,4 +25,8 @@ void getFile(int sock_fd, std::string sdfsfilename, std::string localfilename, c
 
 void replyGetRequest(int sockfd, string sdfsfilename); 
 
+void deleteFile(int sock_fd, string sdfsfilename);
+
+void receiveDeleteRequest(int sockfd); 
+
 #endif

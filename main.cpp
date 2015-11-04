@@ -609,6 +609,37 @@ void processGetRequestThread()
     }
 }
 
+/*
+These two functions deal with delete file
+*/
+bool deleteFileRequest( string sdfsfilename)
+{
+    char buf[1024];
+    for(int i=0; i < members.size(); i++)
+    {
+        bzero(buf, 1024);
+        int connectionFd;
+        connect_to_server(members[i].ip_str.c_str(), port+4, &connectionFd);
+       // getFileSocket = listen_socket(getFileSocket);
+        deleteFile(connectionFd, sdfsfilename);
+    }
+    return true;
+}
+
+void processDeleteRequestThread()
+{
+    int deleteFileSocket = open_socket(port + 4);   //use the port next to UDP as TCP port
+    string sdfsfilename;
+    string sender;
+    char buf[1024];
+    while(true)
+    {
+        int deleteFileSocket = listen_socket(deleteFileSocket);
+        receiveDeleteRequest(deleteFileSocket); 
+
+    }
+}
+
 /* User thread: Waits for user to input a grep command 
 When receiving the grep command from command line (test cases uses this), 
 it will bypass the cin*/
@@ -618,7 +649,7 @@ void listeningCin()
     while (true)
     {
 
-        std::cout << "Type a command (table, leave, join, put, get or quit): ";
+        std::cout << "Type a command (table, leave, join, put, get, delete, or quit): ";
         getline(std::cin, input);
         //std::cout << "You entered: " << input << std::endl;
         stringstream ss(input); // Insert the string into a stream
@@ -673,8 +704,12 @@ void listeningCin()
 
         else if (tokens[0].compare("get") == 0)
         {
-            cout<<"here"<<endl;
             getFileRequest(tokens[1], tokens[2]);
+        }
+
+        else if (tokens[0].compare("delete") == 0)
+        {
+            deleteFileRequest(tokens[1]);
         }
 
         else{
@@ -725,7 +760,7 @@ int main (int argc, char* argv[])
     std::thread detecting(detectThread);
     std::thread processPutRequest(processPutRequestThread);
     std::thread processGetRequest(processGetRequestThread);
-
+    std::thread processDeleteRequest(processDeleteRequestThread);
     /*User thread */
     usleep( 1000*1000 );
     std::thread cinListening(listeningCin);
