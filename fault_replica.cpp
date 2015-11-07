@@ -203,21 +203,21 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
 	if(f.is_open()){
 		while(getline(f,temp)){
             cout<<"temp is "<<temp<<endl;
-			vector<string> doc;//every line
+            if(temp!="")
+    			vector<string> doc;//every line
+                stringstream ss(temp); // Insert the string into a stream
+                string temp_buf;
+                while (ss >> temp_buf)
+                    doc.push_back(temp_buf);
 
-
-            stringstream ss(temp); // Insert the string into a stream
-            string temp_buf;
-            while (ss >> temp_buf)
-                doc.push_back(temp_buf);
-
-			if(doc[0]==machine_fail_ip){
-				file_to_replicate.push_back(doc[1]);//assume no duplicate
-			}
-			else{//if not fail machine
-                cout<<"after token is "<<temp<<endl;
-				new_file.push_back(temp);
-			}
+    			if(doc[0]==machine_fail_ip){
+    				file_to_replicate.push_back(doc[1]);//assume no duplicate
+    			}
+    			else{//if not fail machine
+                    cout<<"after token is "<<temp<<endl;
+    				new_file.push_back(temp);
+    			}
+            }
 		}
 		f.close();
 	}
