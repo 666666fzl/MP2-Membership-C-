@@ -6,7 +6,7 @@ extern std::ofstream logFile;
 
 extern int port;
 extern int sockfd;
-
+extern string my_ip_str;
 extern mutex roundLock;
 extern int roundId;
 extern vector<Message> msgQueue;
@@ -14,6 +14,8 @@ extern mutex msgQueueLock;
 
 extern mutex membersLock;
 extern vector<Node> members;  //store members in the group
+
+std::string file_loc_file = "file_location_log.txt";
 
 std::string printMember(){
 
@@ -119,6 +121,7 @@ int failMember(std::string ip_str, int timeStamp){
         //std::cout << "Removing member: " << ip_str << std::endl;
     }
 
+    replica(ip_str, my_ip_str, members, file_loc_file, members);
     return !exist;
 }
 
@@ -274,7 +277,7 @@ void detectThread()
                 logFile<< "detectThread: No ack received: node failed: "<<theNode.ip_str<<" "<<theNode.timeStamp<<std::endl;
                 //std::cout<< "detectThread: No ack received: node failed: "<<theNode.ip_str<<" "<<theNode.timeStamp<<std::endl;
                 failMember(theNode.ip_str, theNode.timeStamp);
-
+                cout<<"detected failure"<<endl;
                 Message failMsg;
                 failMsg.type = MSG_FAIL;
                 failMsg.roundId = roundId;
@@ -284,6 +287,7 @@ void detectThread()
 
                 spreadMessage(failMsg);
                 flagFail = false;
+                
             }
             else
             {

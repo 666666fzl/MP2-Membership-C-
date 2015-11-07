@@ -22,7 +22,7 @@ int receivePutRequest(int sockfd, char* buf, uint32_t len, std::string& sender)
     socklen_t fromlen = sizeof addr;
     cout<<"receiving"<<endl;
     int byte_count = 0;
-
+    bzero(buf, len);
     FILE * filew;
     //filew=fopen("acopy.txt","wb");
     int numw = 0;
@@ -179,8 +179,6 @@ void getFile(int sock_fd, std::string sdfsfilename, std::string localfilename, c
 
     while ((byte_count = recvfrom(sock_fd, buf, len, 0, &addr, &fromlen))!=0)
     {
-        printf("%s\n", buf);
-        cout<<"idid write to something"<<endl;
         fwrite(buf,1,byte_count,filew);
     }
     close(sock_fd);

@@ -16,9 +16,9 @@
 
 using namespace std;
 
-vector<string> read_from_log_M(string log_file);
+vector<string> read_from_log(string log_file);
 
-bool write_to_log_M(string log_file, vector<string> data,vector<Node> group);
+bool write_to_log(string log_file, vector<string> data,vector<Node> group, string sdfsfilename);
 
 //return true if current machine is the closest.
 bool closest(vector<Node> members, string machine_fail_ip, string my_ip);
@@ -27,11 +27,12 @@ bool closest(vector<Node> members, string machine_fail_ip, string my_ip);
 int replica(string machine_fail_ip, string my_ip, vector<Node> members, string log_file, vector<Node> group);
 
 
-bool putFileRequest_M(string localfilename, string sdfsfilename, vector<Node> group);
+bool putFileRequest(string localfilename, string sdfsfilename, vector<Node> group);
 
-void putFileHelper_M(string localfilename, string sdfsfilename, string desc);
+void putFileHelper(string localfilename, string sdfsfilename, string desc);
 
+bool getFileRequest( string sdfsfilename, string localfilename);
 
-bool getFileRequest_M( string sdfsfilename, string localfilename ,vector<Node> members);
+bool deleteFileRequest( string sdfsfilename);
 
 #endif

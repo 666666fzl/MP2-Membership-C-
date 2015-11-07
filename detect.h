@@ -28,7 +28,7 @@
 #include "constant.h"
 #include "spread.h"
 #include "ChronoCpu.h"
-
+#include "fault_replica.h"
 void sendPing(int sockfd, std::string dest, int port, int roundId, std::string carrier);
 
 void sendAck(int sockfd, std::string dest, int port, int roundId, std::string carrier);

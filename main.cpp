@@ -564,94 +564,6 @@ vector<Node> generateReplicationGroup()
     return replica;
 }
 
-/*
-These two functions deal with put file
-*/
-bool write_to_log(string log_file, vector<string> data,vector<Node> group, string sdfsfilename){
-    /*
-    File* f;
-    f = fopen(log_file,"w+");
-    if(f != NULL){
-        string info;
-        for(int i = 0; i < group.size(); i++){
-            info = group[i].ip_str + " " + sdfsilename + "\n";
-            fputs(info,f);
-        }
-        for(int i = 0; i < data.size(); i++){
-            fputs(data[i],f);
-        }
-    }
-    */
-    
-    ofstream f (log_file);//flag
-    if(f.is_open()){
-        string info;
-        for(int i = 0; i < group.size(); i++){
-            info = group[i].ip_str + " " + sdfsfilename + "\n";
-            f << info;
-        }
-        for(int i = 0; i < data.size(); i++){
-            f << data[i] << endl;
-        }
-
-    }
-    else{
-        f.close();
-        return false;
-    }
-    f.close();
-    return true;
-    
-    
-
-}
-
-vector<string> read_from_log(string log_file){
-    vector<string> Addr_File;
-    string temp;
-    ifstream f(log_file);
-    if(f.is_open()){
-        while(!f.eof()){
-            temp="";
-            getline(f,temp);
-            Addr_File.push_back(temp);
-        }
-        f.close();
-    }
-    f.close();
-    return Addr_File;
-}
-
-
-void putFileHelper(string localfilename, string sdfsfilename, string desc)
-{
-    int connectionFd;
-    connect_to_server(desc.c_str(), port+2, &connectionFd);//members
-    putFile(connectionFd, localfilename, sdfsfilename, desc, port+2);//members
-    cout<<"success put"<<endl;
-}
-
-bool putFileRequest(string localfilename, string sdfsfilename, vector<Node> group)
-{
-
-    vector<string> data;
-    data = read_from_log("file_location_log.txt");
-    write_to_log("file_location_log.txt", data, group, sdfsfilename);
-
-    fileLocLock.lock();
-    for(int i=0; i < members.size(); i++)//members
-    {
-        if(members[i].ip_str!=my_ip_str)
-            putFileHelper("file_location_log.txt", "file_location_log.txt", members[i].ip_str.c_str());
-    }
-    fileLocLock.unlock();
-
-    for(int i=0; i < group.size(); i++)//members
-    {
-        putFileHelper(localfilename, sdfsfilename, group[i].ip_str.c_str());
-    }
-    return true;
-}
 
 void processPutRequestThread()
 {
@@ -667,23 +579,6 @@ void processPutRequestThread()
     }
 }
 
-/*
-These two functions deal with get file
-*/
-bool getFileRequest( string sdfsfilename, string localfilename)
-{
-    char buf[1024];
-    for(int i=0; i < members.size(); i++)
-    {
-        bzero(buf, 1024);
-        int connectionFd;
-        connect_to_server(members[i].ip_str.c_str(), port+3, &connectionFd);
-       // getFileSocket = listen_socket(getFileSocket);
-        getFile(connectionFd, sdfsfilename, localfilename, buf, 1024);
-        cout<<"success get"<<endl;
-    }
-    return true;
-}
 
 void processGetRequestThread()
 {
@@ -705,22 +600,6 @@ void processGetRequestThread()
     }
 }
 
-/*
-These two functions deal with delete file
-*/
-bool deleteFileRequest( string sdfsfilename)
-{
-    char buf[1024];
-    for(int i=0; i < members.size(); i++)
-    {
-        bzero(buf, 1024);
-        int connectionFd;
-        connect_to_server(members[i].ip_str.c_str(), port+4, &connectionFd);
-       // getFileSocket = listen_socket(getFileSocket);
-        deleteFile(connectionFd, sdfsfilename);
-    }
-    return true;
-}
 
 void processDeleteRequestThread()
 {
