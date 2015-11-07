@@ -4,7 +4,7 @@ CC = g++
 
 SRC = main.cpp connections.cpp spread.cpp detect.cpp ChronoCpu.cpp Chrono.cpp filetransmit.cpp fault_replica.cpp
 
-CC_FLAGS = -pthread -std=c++11
+CC_FLAGS = -pthread -std=c++11 -g
 
 EXE = membership
 
