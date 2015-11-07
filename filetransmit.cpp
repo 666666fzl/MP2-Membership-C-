@@ -170,6 +170,7 @@ void getFile(int sock_fd, std::string sdfsfilename, std::string localfilename, c
     socklen_t fromlen = sizeof addr;
     int byte_count = 0;
     sdfsfilename+=":";
+    bzero(buf, len);
     int filename_len = write(sock_fd,sdfsfilename.c_str(), strlen(sdfsfilename.c_str()));
 
     if(filename_len<0) 
@@ -179,6 +180,7 @@ void getFile(int sock_fd, std::string sdfsfilename, std::string localfilename, c
 
     while ((byte_count = recvfrom(sock_fd, buf, len, 0, &addr, &fromlen))!=0)
     {
+        printf("%s\n", buf);
         fwrite(buf,1,byte_count,filew);
     }
     close(sock_fd);
@@ -187,7 +189,7 @@ void getFile(int sock_fd, std::string sdfsfilename, std::string localfilename, c
 
 void replyGetRequest(int sockfd, string sdfsfilename)
 {
-    int fd = open(sdfsfilename.c_str(), O_RDONLY);
+    int fd = open(sdfsfilename.c_str(), O_RDWR);
     if(fd==-1)
     {
         printf("FILE %s does not exist\n", sdfsfilename.c_str());
