@@ -27,6 +27,7 @@
 #include "detect.h"
 #include "ChronoCpu.h"
 #include "filetransmit.h"
+#include "fault_replica.h"
 
 using namespace std;
 
@@ -38,6 +39,7 @@ std::vector<std::string> address;
 std::ofstream logFile;
 
 mutex membersLock;
+mutex fileLocLock; //locks the file_location_log.txt
 std::vector<Node> members;  //store members in the group
 
 int port, sockfd;   //for UDP connection
@@ -565,7 +567,8 @@ vector<Node> generateReplicationGroup()
 /*
 These two functions deal with put file
 */
-bool write_to_log(string log_file, vector<string> data,vector<node> group){
+bool write_to_log(string log_file, vector<string> data,vector<Node> group, string sdfsfilename){
+    /*
     File* f;
     f = fopen(log_file,"w+");
     if(f != NULL){
@@ -578,6 +581,28 @@ bool write_to_log(string log_file, vector<string> data,vector<node> group){
             fputs(data[i],f);
         }
     }
+    */
+    
+    ofstream f (log_file);//flag
+    if(f.is_open()){
+        string info;
+        for(int i = 0; i < group.size(); i++){
+            info = group[i].ip_str + " " + sdfsfilename + "\n";
+            f << info;
+        }
+        for(int i = 0; i < data.size(); i++){
+            f << data[i] << endl;
+        }
+
+    }
+    else{
+        f.close();
+        return false;
+    }
+    f.close();
+    return true;
+    
+    
 
 }
 
@@ -587,11 +612,13 @@ vector<string> read_from_log(string log_file){
     ifstream f(log_file);
     if(f.is_open()){
         while(!f.eof()){
+            temp="";
             getline(f,temp);
-            Addr_File.push(temp);
+            Addr_File.push_back(temp);
         }
         f.close();
     }
+    f.close();
     return Addr_File;
 }
 
@@ -607,13 +634,22 @@ void putFileHelper(string localfilename, string sdfsfilename, string desc)
 bool putFileRequest(string localfilename, string sdfsfilename, vector<Node> group)
 {
 
+    vector<string> data;
+    data = read_from_log("file_location_log.txt");
+    write_to_log("file_location_log.txt", data, group, sdfsfilename);
+
+    fileLocLock.lock();
+    for(int i=0; i < members.size(); i++)//members
+    {
+        if(members[i].ip_str!=my_ip_str)
+            putFileHelper("file_location_log.txt", "file_location_log.txt", members[i].ip_str.c_str());
+    }
+    fileLocLock.unlock();
+
     for(int i=0; i < group.size(); i++)//members
     {
         putFileHelper(localfilename, sdfsfilename, group[i].ip_str.c_str());
     }
-    vector<string> data;
-    data = read_from_log("file_location_log.txt");
-    write_to_log("file_location_log.txt", data, group);
     return true;
 }
 
@@ -758,7 +794,8 @@ void listeningCin()
 
         else if (tokens[0].compare("put") == 0)
         {
-            putFileRequest(tokens[1], tokens[2], members);
+            vector<Node> replica_group = generateReplicationGroup();
+            putFileRequest(tokens[1], tokens[2], replica_group);
         }
 
         else if (tokens[0].compare("get") == 0)

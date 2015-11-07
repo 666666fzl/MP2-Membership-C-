@@ -1,6 +1,8 @@
 #ifndef CONSTANT_H
 #define CONSTANT_H
 
+#include <string.h>
+using namespace std;
 typedef enum MessageType
 {
     MSG_PING,

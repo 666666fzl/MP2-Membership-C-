@@ -69,7 +69,7 @@ int receivePutRequest(int sockfd, char* buf, uint32_t len, std::string& sender)
     return byte_count;
 }
 
-void putFile(int out_fd, std::string localfilename, std::string sdfsfilename, std::string& add, int port, char* buf, uint32_t len)
+void putFile(int out_fd, std::string localfilename, std::string sdfsfilename, std::string& add, int port)
 {
     struct sockaddr_in servaddr,cliaddr;
     struct hostent *server;
@@ -89,25 +89,25 @@ void putFile(int out_fd, std::string localfilename, std::string sdfsfilename, st
     memcpy((char *) &servaddr.sin_addr.s_addr,(char *) server -> h_addr, server -> h_length);
     servaddr.sin_port = htons(port);
 
+
+    sdfsfilename+=":";
+    int filename_len = write(out_fd,sdfsfilename.c_str(), strlen(sdfsfilename.c_str()));
+    if(filename_len<0) printf("Error: sending filename\n");
+
     /* open the file to be sent */
     int fd = open(localfilename.c_str(), O_RDONLY);
     if (fd == -1) {
       fprintf(stderr, "unable to open '%s': %s\n", localfilename.c_str(), strerror(errno));
       exit(1);
     }
-
-    sdfsfilename+=":";
-    int filename_len = write(out_fd,sdfsfilename.c_str(), strlen(sdfsfilename.c_str()));
-    if(filename_len<0) printf("Error: sending filename\n");
-
     /* get the size of the file to be sent */
     fstat(fd, &stat_buf);
-    cout<<"get here"<<stat_buf.st_size<<endl;
     /* copy file using sendfile */
     off_t offset = 0;
     rc = sendfile (out_fd, fd, &offset, stat_buf.st_size);
-    close(fd);
     close(out_fd);
+    close(fd);
+    
     if (rc == -1) {
 
       fprintf(stderr, "error from sendfile: %s\n", strerror(errno));
@@ -230,6 +230,7 @@ void receiveDeleteRequest(int sockfd)
         
     }
     string sdfsfilename(buf); 
+    cout<<sdfsfilename<<endl;
     if (byte_count == -1)
     {
         printf("ERROR RECEIVING!!!\n");
