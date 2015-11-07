@@ -239,7 +239,6 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
 	for(int i=0; i< file_to_replicate.size();i++ ){
 		getFileRequest(file_to_replicate[i], file_to_replicate[i]);
 		//put file and write to log file;
-        break;
 		putFileRequest(file_to_replicate[i], file_to_replicate[i], group);//group?
 		
 		
