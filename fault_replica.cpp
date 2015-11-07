@@ -204,6 +204,7 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
 		while(getline(f,temp)){
             cout<<"temp is "<<temp<<endl;
             if(temp!="")
+            {
     			vector<string> doc;//every line
                 stringstream ss(temp); // Insert the string into a stream
                 string temp_buf;
