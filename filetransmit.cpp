@@ -53,6 +53,7 @@ int receivePutRequest(int sockfd, char* buf, uint32_t len, std::string& sender)
         {
             fwrite(buf,1,byte_count,filew);
         }
+        bzero(buf, len);
     }
     fclose(filew);
 
@@ -150,6 +151,7 @@ string receiveGetRequest(int sockfd, char* buf, uint32_t len, std::string& sende
                 sdfsfilename+=temp[i];
             }
         }
+        bzero(buf, len);
     }
     if (byte_count == -1)
     {
@@ -186,8 +188,8 @@ void getFile(int sock_fd, std::string sdfsfilename, std::string localfilename, c
             filew = fopen(localfilename.c_str(), "wb");
             isRead = false;
         }
-        printf("%s\n", buf);
         fwrite(buf,1,byte_count,filew);
+        bzero(buf, len);
     }
 
     close(sock_fd);
@@ -242,6 +244,7 @@ void receiveDeleteRequest(int sockfd)
     cout<<"receiving get"<<endl;
     int byte_count = 0;
     char buf[1024];
+    bzero(buf, 1024);
     bool findFileName = false;
     while ((byte_count = recv(sockfd, buf, sizeof(buf), 0))!=0)
     {
