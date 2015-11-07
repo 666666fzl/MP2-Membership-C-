@@ -198,8 +198,9 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
 	string temp;
 	ifstream f(log_file);
 	if(f.is_open()){
-		while(!f.eof()){
-			getline(f,temp);
+		while(getline(f,temp)){
+			
+            cout<<"temp is "<<temp<<endl;
 			vector<string> doc;//every line
 			std::istringstream buf(temp);
 			std::istream_iterator<std::string> beg(buf), end;
@@ -212,12 +213,13 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
 				file_to_replicate.push_back(doc[1]);//assume no duplicate
 			}
 			else{//if not fail machine
+
 				new_file.push_back(temp);
 			}
 		}
 		f.close();
 	}
-	
+	cout<<"got here3"<<endl;
 	//update log first
 	//FILE* s;
 	
