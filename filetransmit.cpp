@@ -176,23 +176,41 @@ void getFile(int sock_fd, std::string sdfsfilename, std::string localfilename, c
     if(filename_len<0) 
         printf("Error: sending filename\n");
 
-    FILE *filew = fopen(localfilename.c_str(), "wb");
-
+    
+    FILE *filew;
+    bool isRead = true;
     while ((byte_count = recvfrom(sock_fd, buf, len, 0, &addr, &fromlen))!=0)
     {
+        if(isRead)
+        {
+            filew = fopen(localfilename.c_str(), "wb");
+            isRead = false;
+        }
         printf("%s\n", buf);
         fwrite(buf,1,byte_count,filew);
     }
+
     close(sock_fd);
-    fclose(filew);
+    if(!isRead)
+        fclose(filew);
 }
 
 void replyGetRequest(int sockfd, string sdfsfilename)
 {
-    int fd = open(sdfsfilename.c_str(), O_RDWR);
+
+    struct stat file_stat;
+    if(stat (sdfsfilename.c_str(), &file_stat) != 0)
+    {
+        printf("FILE %s does not exist\n", sdfsfilename.c_str());
+        close(sockfd);
+        return;
+    }
+
+    int fd = open(sdfsfilename.c_str(), O_RDONLY);
     if(fd==-1)
     {
         printf("FILE %s does not exist\n", sdfsfilename.c_str());
+
     }
 
     struct stat stat_buf;      /* argument to fstat */
