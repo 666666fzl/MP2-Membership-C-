@@ -165,9 +165,11 @@ bool deleteFileRequest( string sdfsfilename)
 bool closest(vector<Node> members, string machine_fail_ip, string my_ip){
 	vector<string> machine_names;
 	for(int i=0;i<members.size();i++){
+        cout<<"currently in members "<<members[i].ip_str<<endl;
 		machine_names.push_back(members[i].ip_str);
 	}
     machine_names.push_back(machine_fail_ip);
+    machine_names.push_back(my_ip);
 	std::sort(machine_names.begin(),machine_names.end());
     for(int i=0;i<members.size();i++){
         cout<<"sorted members are "<<machine_names[i]<<endl;
@@ -186,11 +188,11 @@ bool closest(vector<Node> members, string machine_fail_ip, string my_ip){
 //members need to contain fail machine for now.
 int replica(string machine_fail_ip, string my_ip, vector<Node> members, string log_file, vector<Node> group) {
 	bool is_right_machine = closest(members, machine_fail_ip, my_ip);
-	cout<<"got here"<<endl;
+	cout<<"got here1"<<endl;
 	if(!is_right_machine){
 		return 0;
 	}
-	cout<<"got here"<<endl;
+	cout<<"got here2"<<endl;
 	//check the document to extract all the document into a vector.
 	vector<string> file_to_replicate;
 	vector<string> new_file;
