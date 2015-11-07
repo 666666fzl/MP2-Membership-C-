@@ -167,7 +167,11 @@ bool closest(vector<Node> members, string machine_fail_ip, string my_ip){
 	for(int i=0;i<members.size();i++){
 		machine_names.push_back(members[i].ip_str);
 	}
+    machine_names.push_back(machine_fail_ip);
 	std::sort(machine_names.begin(),machine_names.end());
+    for(int i=0;i<members.size();i++){
+        cout<<"sorted members are "<<machine_names[i]<<endl;
+    }
 	for(int i=0;i<machine_names.size();i++){
 		if((machine_names[i]==machine_fail_ip) && (i != machine_names.size() -1) ){
 			return (machine_names[i+1]==my_ip); 
