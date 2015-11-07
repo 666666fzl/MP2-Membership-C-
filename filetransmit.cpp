@@ -132,7 +132,7 @@ string receiveGetRequest(int sockfd, char* buf, uint32_t len, std::string& sende
     socklen_t fromlen = sizeof addr;
     cout<<"receiving get"<<endl;
     int byte_count = 0;
-
+    bzero(buf, len);
     string sdfsfilename = "";
     bool findFileName = false;
     while (!findFileName && (byte_count = recvfrom(sockfd, buf, len, 0, &addr, &fromlen))!=0)
