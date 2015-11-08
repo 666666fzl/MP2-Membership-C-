@@ -573,9 +573,9 @@ void processPutRequestThread()
     char buf[1024];
     while(true)
     {
-        cout<<"receiving stuff"<<endl;
         listenFileSocket = listen_socket(putFileSocket);
         byte_read = receivePutRequest(listenFileSocket, buf, 1024, sender);
+        cout<<"FINIGHING PUTTING REQUEST"<<endl;
     }
 }
 
@@ -596,7 +596,7 @@ void processGetRequestThread()
         // cout<<"sender is "<<sender<<endl;
         // connect_to_server(sender.c_str(), port+3, &connectionFd);
         replyGetRequest(listenGetFileSocket, sdfsfilename); 
-
+       
     }
 }
 

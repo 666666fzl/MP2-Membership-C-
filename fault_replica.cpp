@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 #include <stdio.h>
+#include <sys/stat.h>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -84,19 +85,6 @@ These two functions deal with get file
 */
 bool getFileRequest( string sdfsfilename, string localfilename)
 {
-    vector<string> data;
-    vector<Node>group;
-    for(int i = 0; i < members.size(); i ++)
-    {
-        if(members[i].ip_str==my_ip_str)
-        {
-            group.push_back(members[i]);
-            break;
-        }
-    }
-    data = read_from_log("file_location_log.txt");
-    write_to_log("file_location_log.txt", data, group, sdfsfilename);
-
     char buf[1024];
     for(int i=0; i < members.size(); i++)
     {
@@ -105,9 +93,35 @@ bool getFileRequest( string sdfsfilename, string localfilename)
         connect_to_server(members[i].ip_str.c_str(), port+3, &connectionFd);
        // getFileSocket = listen_socket(getFileSocket);
         getFile(connectionFd, sdfsfilename, localfilename, buf, 1024);
-        if(members[i].ip_str!=my_ip_str)
+    }
+
+    struct stat file_stat;
+    bool changeLog = true;
+    if(stat (localfilename.c_str(), &file_stat) != 0)
+    {
+        printf("FILE %s does not exist\n", sdfsfilename.c_str());
+        changeLog = false;
+    }
+    if(changeLog)
+    {
+        vector<string> data;
+        vector<Node>group;
+        for(int i = 0; i < members.size(); i ++)
         {
-            putFileHelper("file_location_log.txt", "file_location_log.txt", members[i].ip_str.c_str());
+            if(members[i].ip_str==my_ip_str)
+            {
+                group.push_back(members[i]);
+                break;
+            }
+        }
+        data = read_from_log("file_location_log.txt");
+        write_to_log("file_location_log.txt", data, group, sdfsfilename);
+        for(int i = 0; i < members.size(); i ++)
+        {
+            if(members[i].ip_str!=my_ip_str)
+            {
+                putFileHelper("file_location_log.txt", "file_location_log.txt", members[i].ip_str.c_str());
+            }
         }
     }
 
