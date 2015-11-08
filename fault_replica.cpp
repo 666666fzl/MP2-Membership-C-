@@ -279,12 +279,12 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
 	//get these file from other machines, put them in random.
 	for(int i=0; i< file_to_replicate.size();i++ )
     {
-        for(int i = 0; i < data.size(); i ++)
+        for(int j = 0; j < data.size(); j ++)
         {
-            if(data[i]!="" && file_to_replicate[i]!="")
+            if(data[j]!="" && file_to_replicate[i]!="")
             {
                 vector<string> tokens;//every line
-                stringstream ss(data[i]); // Insert the string into a stream
+                stringstream ss(data[j]); // Insert the string into a stream
                 string temp_buf;
                 while (ss >> temp_buf)
                     tokens.push_back(temp_buf);
