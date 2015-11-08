@@ -241,9 +241,9 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
 	if(f.is_open()){
 		while(getline(f,temp)){
             cout<<"temp is "<<temp<<endl;
+            temp = temp.substr(temp.find_first_not_of(" "));
             if(temp!="")
             {
-                temp = temp.substr(temp.find_first_not_of(" "));
     			vector<string> doc;//every line
                 stringstream ss(temp); // Insert the string into a stream
                 string temp_buf;
@@ -279,8 +279,10 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
 	//get these file from other machines, put them in random.
 	for(int i=0; i< file_to_replicate.size();i++ )
     {
+        file_to_replicate[i] = file_to_replicate[i].substr(file_to_replicate[i].find_first_not_of(" "));
         for(int j = 0; j < data.size(); j ++)
         {
+            data[j] = data[j].substr(data[j].find_first_not_of(" "));
             if(data[j]!="" && file_to_replicate[i]!="")
             {
                 vector<string> tokens;//every line

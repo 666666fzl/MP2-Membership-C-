@@ -39,6 +39,7 @@ int receivePutRequest(int sockfd, char* buf, uint32_t len, std::string& sender)
                 {
                     findFileName = true;
                     filew=fopen(createFileName.c_str(),"wb");
+                    printf("first write %s\n", buf+i+1);
                     fwrite(buf+i+1,1,byte_count-i-1,filew);
                     break;
 
