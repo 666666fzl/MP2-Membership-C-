@@ -281,7 +281,7 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
     {
         for(int i = 0; i < data.size(); i ++)
         {
-            if(data[i]!="" && file_to_replicate!="")
+            if(data[i]!="" && file_to_replicate[i]!="")
             {
                 vector<string> tokens;//every line
                 stringstream ss(data[i]); // Insert the string into a stream
