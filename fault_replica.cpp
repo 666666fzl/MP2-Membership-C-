@@ -279,7 +279,9 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
 	//get these file from other machines, put them in random.
 	for(int i=0; i< file_to_replicate.size();i++ )
     {
+        cout<<"replicate file "<<file_to_replicate[i]<<endl;
         file_to_replicate[i] = file_to_replicate[i].substr(file_to_replicate[i].find_first_not_of(" "));
+        bool needToPut = false;
         for(int j = 0; j < data.size(); j ++)
         {
             data[j] = data[j].substr(data[j].find_first_not_of(" "));
@@ -294,22 +296,29 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
                 {
                     if(tokens[0]==my_ip_str)
                     {
-                        //put file and write to log file;
+                        needToPut = true;
+                        break;
+                    }
 
-                        vector<Node> candidates = nodeWithoutFile(members, tokens[1], data);
-                        int randIdx = rand()% candidates.size();
-                        vector<Node> ret;
-                        ret.push_back(candidates[randIdx]);
-                        putFileRequest(file_to_replicate[i], file_to_replicate[i], ret);//group?
-                        
-                    }
-                    else
-                    {
-                        getFileRequest(file_to_replicate[i], file_to_replicate[i]);
-                    }
                 }
             }
 
+        }
+
+        //put file and write to log file;
+        if(needToPut)
+        {
+            cout<<"lonnnnnnnnnngg doinggggg a PUT";
+            vector<Node> candidates = nodeWithoutFile(members, file_to_replicate[i], data);
+            int randIdx = rand()% candidates.size();
+            vector<Node> ret;
+            ret.push_back(candidates[randIdx]);
+            putFileRequest(file_to_replicate[i], file_to_replicate[i], ret);//group?
+        }
+        else
+        {
+            cout<<"lonnnnnnnnnngg doinggggg a GET";
+            getFileRequest(file_to_replicate[i], file_to_replicate[i]);
         }
 	
 	}
