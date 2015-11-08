@@ -19,21 +19,6 @@ extern int deleteFileSocket;
 extern string my_ip_str;
 
 bool write_to_log(string log_file, vector<string> data,vector<Node> group, string sdfsfilename){
-    /*
-    File* f;
-    f = fopen(log_file,"w+");
-    if(f != NULL){
-        string info;
-        for(int i = 0; i < group.size(); i++){
-            info = group[i].ip_str + " " + sdfsilename + "\n";
-            fputs(info,f);
-        }
-        for(int i = 0; i < data.size(); i++){
-            fputs(data[i],f);
-        }
-    }
-    */
-    
     ofstream f (log_file);//flag
     if(f.is_open()){
         string info;
@@ -63,9 +48,7 @@ vector<string> read_from_log(string log_file){
     string temp;
     ifstream f(log_file);
     if(f.is_open()){
-        while(!f.eof()){
-            temp="";
-            getline(f,temp);
+        while(getline(f,temp)){
             Addr_File.push_back(temp);
         }
         f.close();
@@ -74,7 +57,26 @@ vector<string> read_from_log(string log_file){
     return Addr_File;
 }
 
+bool delete_from_log(string log_file, vector<string> data, string sdfsfilename)
+{
+    for(auto it=data.begin(); it!=data.end();)
+    {
+        if(it->find(sdfsfilename)!=string::npos)
+        {
+            it = data.erase(it);
+        }
+        else
+            it++;
+    }
 
+    ofstream f (log_file);//flag
+    if(f.is_open()){
+        for(int i = 0; i < data.size(); i++){
+            f << data[i] << endl;
+        }
+    }
+
+}
 
 
 /*
@@ -153,6 +155,15 @@ These two functions deal with delete file
 */
 bool deleteFileRequest( string sdfsfilename)
 {
+    vector<string>data = read_from_log("file_location_log.txt");
+    delete_from_log("file_location_log.txt", data, sdfsfilename);
+
+    for(int i=0; i < members.size(); i++)//members
+    {
+        if(members[i].ip_str!=my_ip_str)
+            putFileHelper("file_location_log.txt", "file_location_log.txt", members[i].ip_str.c_str());
+    }
+
     char buf[1024];
     for(int i=0; i < members.size(); i++)
     {
@@ -187,6 +198,32 @@ bool closest(vector<Node> members, string machine_fail_ip, string my_ip){
 	return false;//true if it is closest using the member list.
 }
 
+vector<Node> nodeWithoutFile(vector<Node> members, string sdfsfilename, vector<string> data)
+{
+    vector<Node> group(members.begin(), members.end());
+    for(int i = 0; i < data.size(); i ++)
+    {
+        vector<string> tokens;//every line
+        stringstream ss(data[i]); // Insert the string into a stream
+        string temp_buf;
+        while (ss >> temp_buf)
+            tokens.push_back(temp_buf);
+        if(tokens[1]==sdfsfilename)
+        {
+            for(auto it = group.begin(); it!=group.end(); it++)
+            {
+                if(it->ip_str==tokens[0])
+                {
+                    group.erase(it);
+                    break;
+                }
+            }
+        }
+    }
+
+    return group;
+}
+
 //members need to contain fail machine for now.
 int replica(string machine_fail_ip, string my_ip, vector<Node> members, string log_file, vector<Node> group) {
 	bool is_right_machine = closest(members, machine_fail_ip, my_ip);
@@ -194,6 +231,7 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
 	if(!is_right_machine){
 		return 0;
 	}
+    vector<string>data = read_from_log(log_file);
 	cout<<"got here2"<<endl;
 	//check the document to extract all the document into a vector.
 	vector<string> file_to_replicate;
@@ -235,19 +273,40 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
 		}
 	}
 
+
+    
 	//get these file from other machines, put them in random.
-	for(int i=0; i< file_to_replicate.size();i++ ){
-		getFileRequest(file_to_replicate[i], file_to_replicate[i]);
-		//put file and write to log file;
-		putFileRequest(file_to_replicate[i], file_to_replicate[i], group);//group?
-		
-		
-		//ask file from each of the server.
-		
-		
-		
-		
-		
+	for(int i=0; i< file_to_replicate.size();i++ )
+    {
+        for(int i = 0; i < data.size(); i ++)
+        {
+            vector<string> tokens;//every line
+            stringstream ss(data[i]); // Insert the string into a stream
+            string temp_buf;
+            while (ss >> temp_buf)
+                tokens.push_back(temp_buf);
+            if(tokens[1]==file_to_replicate[i])
+            {
+                if(tokens[0]==my_ip_str)
+                {
+                    //put file and write to log file;
+                    if(members.size()>3)
+                    {
+                        vector<Node> candidates = nodeWithoutFile(members, tokens[1], data);
+                        int randIdx = rand()% candidates.size();
+                        vector<Node> ret;
+                        ret.push_back(candidates[randIdx]);
+                        putFileRequest(file_to_replicate[i], file_to_replicate[i], ret);//group?
+                    }
+                }
+                else
+                {
+                    getFileRequest(file_to_replicate[i], file_to_replicate[i]);
+                }
+            }
+
+        }
+	
 	}
 	return 1;
 }
