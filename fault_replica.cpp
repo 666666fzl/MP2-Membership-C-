@@ -127,7 +127,7 @@ void putFileHelper(string localfilename, string sdfsfilename, string desc)
     int connectionFd;
     connect_to_server(desc.c_str(), port+2, &connectionFd);//members
     putFile(connectionFd, localfilename, sdfsfilename, desc, port+2);//members
-    cout<<"success put"<<endl;
+    cout<<"success put "<<sdfsfilename<<endl;
 }
 
 bool putFileRequest(string localfilename, string sdfsfilename, vector<Node> group)
@@ -281,27 +281,30 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
     {
         for(int i = 0; i < data.size(); i ++)
         {
-            vector<string> tokens;//every line
-            stringstream ss(data[i]); // Insert the string into a stream
-            string temp_buf;
-            while (ss >> temp_buf)
-                tokens.push_back(temp_buf);
-            if(tokens[1]==file_to_replicate[i])
+            if(data[i]!="")
             {
-                if(tokens[0]==my_ip_str)
+                vector<string> tokens;//every line
+                stringstream ss(data[i]); // Insert the string into a stream
+                string temp_buf;
+                while (ss >> temp_buf)
+                    tokens.push_back(temp_buf);
+                if(tokens[1]==file_to_replicate[i])
                 {
-                    //put file and write to log file;
+                    if(tokens[0]==my_ip_str)
+                    {
+                        //put file and write to log file;
 
-                    vector<Node> candidates = nodeWithoutFile(members, tokens[1], data);
-                    int randIdx = rand()% candidates.size();
-                    vector<Node> ret;
-                    ret.push_back(candidates[randIdx]);
-                    putFileRequest(file_to_replicate[i], file_to_replicate[i], ret);//group?
-                    
-                }
-                else
-                {
-                    getFileRequest(file_to_replicate[i], file_to_replicate[i]);
+                        vector<Node> candidates = nodeWithoutFile(members, tokens[1], data);
+                        int randIdx = rand()% candidates.size();
+                        vector<Node> ret;
+                        ret.push_back(candidates[randIdx]);
+                        putFileRequest(file_to_replicate[i], file_to_replicate[i], ret);//group?
+                        
+                    }
+                    else
+                    {
+                        getFileRequest(file_to_replicate[i], file_to_replicate[i]);
+                    }
                 }
             }
 
