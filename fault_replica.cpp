@@ -243,6 +243,7 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
             cout<<"temp is "<<temp<<endl;
             if(temp!="")
             {
+                temp = temp.substr(temp.find_first_not_of(" "));
     			vector<string> doc;//every line
                 stringstream ss(temp); // Insert the string into a stream
                 string temp_buf;
@@ -290,14 +291,13 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
                 if(tokens[0]==my_ip_str)
                 {
                     //put file and write to log file;
-                    if(members.size()>3)
-                    {
-                        vector<Node> candidates = nodeWithoutFile(members, tokens[1], data);
-                        int randIdx = rand()% candidates.size();
-                        vector<Node> ret;
-                        ret.push_back(candidates[randIdx]);
-                        putFileRequest(file_to_replicate[i], file_to_replicate[i], ret);//group?
-                    }
+
+                    vector<Node> candidates = nodeWithoutFile(members, tokens[1], data);
+                    int randIdx = rand()% candidates.size();
+                    vector<Node> ret;
+                    ret.push_back(candidates[randIdx]);
+                    putFileRequest(file_to_replicate[i], file_to_replicate[i], ret);//group?
+                    
                 }
                 else
                 {
