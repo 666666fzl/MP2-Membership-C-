@@ -192,6 +192,7 @@ void getFile(int sock_fd, std::string sdfsfilename, std::string localfilename, c
         fwrite(buf,1,byte_count,filew);
         bzero(buf, len);
     }
+    cout<<"FINIGHING GETTING REQUEST"<<endl;
 
     close(sock_fd);
     if(!isRead)

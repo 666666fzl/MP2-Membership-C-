@@ -308,7 +308,7 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
         //put file and write to log file;
         if(needToPut)
         {
-            cout<<"lonnnnnnnnnngg doinggggg a PUT";
+            cout<<"lonnnnnnnnnngg doinggggg a PUT"<<endl;
             vector<Node> candidates = nodeWithoutFile(members, file_to_replicate[i], data);
             int randIdx = rand()% candidates.size();
             vector<Node> ret;
@@ -317,7 +317,7 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
         }
         else
         {
-            cout<<"lonnnnnnnnnngg doinggggg a GET";
+            cout<<"lonnnnnnnnnngg doinggggg a GET"<<endl;
             getFileRequest(file_to_replicate[i], file_to_replicate[i]);
         }
 	
