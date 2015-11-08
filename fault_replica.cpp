@@ -270,7 +270,7 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
 	if(s.is_open()){
 		for(int i = 0; i < new_file.size(); i++){
 			//fputs(new_file[i] + '\n',f);
-			s << new_file[i] + '\n';
+			s << new_file[i] << endl;
 		}
 	}
 
@@ -281,7 +281,7 @@ int replica(string machine_fail_ip, string my_ip, vector<Node> members, string l
     {
         for(int i = 0; i < data.size(); i ++)
         {
-            if(data[i]!="")
+            if(data[i]!="" && file_to_replicate!="")
             {
                 vector<string> tokens;//every line
                 stringstream ss(data[i]); // Insert the string into a stream
